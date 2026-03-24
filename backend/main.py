@@ -1,3 +1,4 @@
+# flake8: noqa: E402
 import time
 import os
 from contextlib import asynccontextmanager
