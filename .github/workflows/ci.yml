@@ -1,0 +1,87 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install linters
+        run: pip install flake8 bandit
+      - name: flake8
+        run: flake8 backend/ --max-line-length=100 --exclude=venv
+      - name: bandit
+        run: bandit -r backend/ -ll
+      - name: Lint passed
+        run: echo "Lint passed"
+
+  unit-and-mock-tests:
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: pip install -r backend/requirements.txt
+      - name: Run health and security tests
+        working-directory: backend
+        run: |
+          pytest ../tests/test_health.py -v --tb=short
+          pytest ../tests/test_security.py -v --tb=short
+
+  auth-and-deploy-tests:
+    needs: unit-and-mock-tests
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgresql://paas_user:paas_pass@localhost:5432/paas_db
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: paas_user
+          POSTGRES_PASSWORD: paas_pass
+          POSTGRES_DB: paas_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U paas_user"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: pip install -r backend/requirements.txt
+      - name: Run auth and deploy tests
+        working-directory: backend
+        run: |
+          pytest ../tests/test_auth.py -v --tb=short
+          pytest ../tests/test_deploy.py -v --tb=short
+
+  build-verify:
+    needs: auth-and-deploy-tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Docker Compose config
+        run: docker compose config
+      - name: Build backend image
+        run: docker build ./backend -t paas-backend-test
+      - name: Build verified
+        run: echo "Build verified successfully"

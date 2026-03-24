@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard — Local PaaS</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/css/style.css" />
+  </head>
+  <body class="page-dashboard">
+    <header class="navbar">
+      <div class="navbar-inner">
+        <span class="brand">🚀 Local PaaS</span>
+        <div class="navbar-right">
+          <span id="welcome-user" class="welcome"></span>
+          <button type="button" id="btn-logout" class="btn btn-ghost">Logout</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <section class="stats-row" id="stats-row"></section>
+
+      <section class="card section-card">
+        <h2 class="section-title">Deploy New Container</h2>
+        <form id="deploy-form" class="deploy-form">
+          <label class="field">
+            <span>Image</span>
+            <input type="text" name="image" placeholder="nginx, redis, postgres..." required />
+          </label>
+          <label class="field">
+            <span>Container port</span>
+            <input type="number" name="container_port" placeholder="Default: 80" min="1" max="65535" value="80" />
+          </label>
+          <label class="field">
+            <span>Name (optional)</span>
+            <input type="text" name="name" placeholder="Optional label" />
+          </label>
+          <button type="submit" id="btn-deploy" class="btn btn-primary">
+            <span class="btn-label">Deploy</span>
+            <span class="btn-spinner hidden" aria-hidden="true"></span>
+          </button>
+        </form>
+        <div id="deploy-result" class="deploy-result hidden"></div>
+      </section>
+
+      <section class="card section-card">
+        <div class="section-head">
+          <h2 class="section-title">Deployed Containers</h2>
+          <button type="button" id="btn-refresh" class="btn btn-secondary">Refresh</button>
+        </div>
+        <div id="containers-state" class="table-wrap">
+          <p class="muted">Loading containers...</p>
+        </div>
+      </section>
+
+      <section class="card section-card">
+        <h2 class="section-title">System Metrics</h2>
+        <div id="metrics-bars" class="metrics-bars"></div>
+      </section>
+
+      <section class="card section-card">
+        <h2 class="section-title">Quick Links</h2>
+        <div class="quick-links">
+          <a class="btn btn-secondary" href="http://localhost:3000" target="_blank" rel="noopener">📊 Open Grafana</a>
+          <a class="btn btn-secondary" href="http://localhost:9090" target="_blank" rel="noopener">🔭 Open Prometheus</a>
+          <a class="btn btn-secondary" href="/api/docs" target="_blank" rel="noopener">📖 API Docs</a>
+        </div>
+      </section>
+    </main>
+
+    <div id="toast-root" class="toast-root" aria-live="polite"></div>
+    <script src="/js/app.js"></script>
+  </body>
+</html>
