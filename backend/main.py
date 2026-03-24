@@ -106,7 +106,7 @@ async def lifespan(app: FastAPI):
     yield
 
 
-import os
+import os # noqa: E402
 app = FastAPI(
     title=APP_NAME,
     version=APP_VERSION,
