@@ -1,4 +1,3 @@
-# flake8: noqa: E402
 import time
 import os
 from contextlib import asynccontextmanager
@@ -26,7 +25,6 @@ from schemas import (
     MessageResponse,
     StatsResponse,
 )
-# from utils import get_local_ip, get_next_port, validate_image_name
 
 APP_NAME = "Local Container-Based Application Deployment System with Monitoring and CI/CD"
 APP_VERSION = "1.0.0"
