@@ -1,4 +1,5 @@
 import time
+import os
 from contextlib import asynccontextmanager
 from datetime import datetime
 
@@ -106,7 +107,7 @@ async def lifespan(app: FastAPI):
     yield
 
 
-import os # noqa: E402
+# import os # noqa: E402
 app = FastAPI(
     title=APP_NAME,
     version=APP_VERSION,
