@@ -9,6 +9,8 @@ from fastapi.responses import Response
 from prometheus_client import CONTENT_TYPE_LATEST, Counter, Gauge, Histogram, generate_latest
 from sqlalchemy import text
 from sqlalchemy.orm import Session
+from utils import get_local_ip, get_next_port, validate_image_name
+
 
 import docker_service
 from auth import get_current_user, hash_password, router as auth_router
@@ -24,7 +26,7 @@ from schemas import (
     MessageResponse,
     StatsResponse,
 )
-from utils import get_local_ip, get_next_port, validate_image_name
+# from utils import get_local_ip, get_next_port, validate_image_name
 
 APP_NAME = "Local Container-Based Application Deployment System with Monitoring and CI/CD"
 APP_VERSION = "1.0.0"
