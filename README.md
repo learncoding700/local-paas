@@ -1,112 +1,122 @@
-# 🚀 Local Container Deployment System
+<div align="center">
 
-## MCA Final Year Project
+<h1>🚀 Local Container Deployment System</h1>
+<p><em>A mini Platform-as-a-Service for your local machine</em></p>
 
-Badges:
+[![Python](https://img.shields.io/badge/Python-3.12-3776AB?style=flat-square&logo=python&logoColor=white)](https://python.org)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.111-009688?style=flat-square&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?style=flat-square&logo=postgresql&logoColor=white)](https://postgresql.org)
+[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=flat-square&logo=docker&logoColor=white)](https://docker.com)
+[![Tests](https://img.shields.io/badge/Tests-25%20passing-brightgreen?style=flat-square&logo=pytest&logoColor=white)](./tests)
+[![CI](https://img.shields.io/badge/CI-GitHub%20Actions-2088FF?style=flat-square&logo=githubactions&logoColor=white)](./.github/workflows/ci.yml)
+[![License](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)](./LICENSE)
 
-![Python](https://img.shields.io/badge/python-3.12-blue)
-![FastAPI](https://img.shields.io/badge/FastAPI-0.111-green)
-![Tests](https://img.shields.io/badge/tests-25-brightgreen)
-![Docker](https://img.shields.io/badge/docker-compose-blue)
-![License](https://img.shields.io/badge/license-MIT-green)
+<br/>
 
-## 1. What This Project Does
+> Deploy, monitor, and manage Docker containers from a clean web UI — all on your own machine.
 
-This project is a **mini local Platform-as-a-Service (PaaS)** for your own machine. It exposes a small web dashboard and REST API so authenticated users can **run pre-built Docker images** (such as `nginx` or `redis`) on automatically chosen host ports, **list and control** those containers, and **persist deployment history** in PostgreSQL. The stack adds **JWT authentication**, **Prometheus metrics**, **Grafana dashboards**, an **Nginx** entry point, and a **GitHub Actions** pipeline that lints the backend, runs **25 focused tests**, and verifies Docker images build cleanly.
+</div>
 
-## 2. Architecture
+---
+
+## What It Does
+
+**Local Container Deployment System** is a self-hosted mini-PaaS that lets authenticated users pull and run Docker images, manage container lifecycles, and observe system metrics — all through a REST API and browser dashboard.
+
+Think of it as a lightweight Portainer or Railway, built from scratch to demonstrate end-to-end full-stack + DevOps engineering.
+
+**Key capabilities:**
+- 🔐 **JWT-secured API** — register, login, and manage containers with token-based auth
+- 🐳 **Container lifecycle control** — deploy, list, stop, restart, and remove containers
+- 📊 **Live observability** — Prometheus scrapes `/metrics`; Grafana ships a pre-provisioned dashboard
+- 🗄️ **Persistent history** — all deployments recorded in PostgreSQL and kept in sync with Docker state
+- ⚙️ **One-command setup** — single `docker compose up` brings up all six services
+- ✅ **25 automated tests** — health, auth, deploy lifecycle, and security validation, run in CI
+
+---
+
+## Architecture
 
 ```
-                    ┌─────────────┐
-   Browser ────────►│   Nginx     │ :80  (API + static UI proxy)
-                    └──────┬──────┘
-                           │
-              ┌────────────┼────────────┐
-              │            │            │
-              ▼            ▼            ▼
-      ┌──────────────┐ ┌─────────┐ ┌──────────────┐
-      │   Frontend   │ │ Backend │ │  (external)  │
-      │ nginx:static │ │ FastAPI │ │ Docker Engine│
-      └──────────────┘ └────┬────┘ └──────▲───────┘
-                            │             │
-                     ┌──────▼─────┐       │ docker.sock
-                     │ PostgreSQL │       │
-                     └────────────┘       │
-                            ▲             │
-                     ┌──────┴──────┐      │
-                     │ Prometheus  │◄────┘ scrape /metrics
-                     └──────┬──────┘
-                            │
-                     ┌──────▼──────┐
-                     │   Grafana   │ :3000
-                     └─────────────┘
+Browser ──► Nginx :80 (reverse proxy)
+                │
+      ┌─────────┼──────────┐
+      ▼         ▼          ▼
+  Frontend   Backend    (Docker Engine)
+  (static)  (FastAPI)       ▲
+                │           │ docker.sock
+           PostgreSQL        │
+                ▲           │
+           Prometheus ───────┘
+                │
+            Grafana :3000
 ```
 
-Six container roles: **PostgreSQL**, **Backend**, **Frontend (static Nginx)**, **Edge Nginx**, **Prometheus**, **Grafana**. The host Docker daemon runs user images; the backend talks to it via the mounted socket.
+Six containerised roles communicate over a private Compose network. The backend talks to the host Docker daemon via a bind-mounted socket.
 
-## 3. Tech Stack
+---
 
-| Component        | Technology              | Version   |
-|-----------------|-------------------------|-----------|
-| API             | Python / FastAPI        | 3.12 / 0.111 |
-| DB              | PostgreSQL              | 16        |
-| Auth            | JWT (python-jose), bcrypt | 3.3 / 1.7 |
-| Containers      | Docker Compose v2       | —         |
-| Reverse proxy   | Nginx                   | 1.25      |
-| Metrics         | Prometheus              | 2.51      |
-| Dashboards      | Grafana                 | 10.4      |
-| Frontend        | HTML5 / CSS3 / JS       | —         |
-| Tests           | pytest, httpx, mocks    | 8.2       |
-| CI              | GitHub Actions          | —         |
+## Tech Stack
 
-## 4. Quick Start
+| Layer | Technology | Version |
+|---|---|---|
+| API | Python / FastAPI | 3.12 / 0.111 |
+| Database | PostgreSQL | 16 |
+| Auth | JWT (`python-jose`) + bcrypt | 3.3 / 1.7 |
+| Containers | Docker Compose v2 | — |
+| Reverse Proxy | Nginx | 1.25 |
+| Metrics | Prometheus | 2.51 |
+| Dashboards | Grafana | 10.4 |
+| Frontend | HTML5 / CSS3 / Vanilla JS | — |
+| Testing | pytest + httpx | 8.2 |
+| CI | GitHub Actions | — |
+
+---
+
+## Quick Start
+
+**Prerequisites:** Docker Desktop (or Docker Engine + Compose v2) running on your machine.
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/your-username/mca-local-paas
 cd mca-local-paas
 docker compose up --build -d
 ```
 
-Open **http://localhost** in a browser. The API is available under **http://localhost/api/** (e.g. **http://localhost/api/docs** for Swagger).
+Open **http://localhost** — the dashboard is live.
 
-## 5. Default Credentials
+| Service | URL | Credentials |
+|---|---|---|
+| Web Dashboard | http://localhost | `admin` / `admin123` |
+| API Docs (Swagger) | http://localhost/api/docs | — |
+| Prometheus | http://localhost:9090 | — |
+| Grafana | http://localhost:3000 | `admin` / `admin` |
 
-| Area        | Username | Password  |
-|------------|----------|-----------|
-| Dashboard  | `admin`  | `admin123` |
-| Grafana    | `admin`  | `admin`   |
+> The `admin` dashboard user is seeded automatically on first startup.
 
-The dashboard user is **created automatically** on first API startup if it does not exist. Change secrets in production via `JWT_SECRET_KEY` and Grafana env vars.
+---
 
-## 6. Service URLs
+## API Reference
 
-| Service    | URL                     | Purpose                    |
-|-----------|-------------------------|----------------------------|
-| Web UI    | http://localhost        | Login + dashboard          |
-| API docs  | http://localhost/api/docs | Interactive OpenAPI      |
-| Prometheus| http://localhost:9090   | Metrics UI                 |
-| Grafana   | http://localhost:3000   | Dashboards                 |
-| Backend   | (internal) backend:8000 | Scraped by Prometheus      |
-| PostgreSQL| (internal) postgres:5432| Application data           |
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| `GET` | `/health` | — | API, DB, and Docker health check |
+| `GET` | `/stats` | — | Deployment counts + host metrics |
+| `GET` | `/metrics` | — | Prometheus exposition format |
+| `POST` | `/auth/register` | — | Register a new user |
+| `POST` | `/auth/login` | — | Obtain JWT token |
+| `POST` | `/deploy` | Bearer | Pull image, run container, record to DB |
+| `GET` | `/containers` | Bearer | List containers, sync with Docker state |
+| `GET` | `/containers/{id}` | Bearer | Container detail + last logs |
+| `POST` | `/stop` | Bearer | Stop a running container |
+| `POST` | `/restart` | Bearer | Restart a container |
+| `DELETE` | `/remove` | Bearer | Force-remove container + delete DB row |
 
-## 7. API Endpoints
+Full interactive docs at **`/api/docs`** (Swagger UI) and **`/api/redoc`**.
 
-| Method | Endpoint              | Auth   | Description |
-|--------|-----------------------|--------|-------------|
-| GET    | `/`                   | No     | Project info + basic stats |
-| GET    | `/health`             | No     | API, DB, Docker health |
-| GET    | `/stats`              | No     | Deployment + host metrics |
-| GET    | `/metrics`            | No     | Prometheus exposition |
-| POST   | `/auth/register`      | No     | Register user |
-| POST   | `/auth/login`         | No     | JWT login |
-| POST   | `/deploy`             | Bearer | Pull + run image, record DB |
-| GET    | `/containers`         | Bearer | List + sync status |
-| GET    | `/containers/{id}`    | Bearer | Detail + last logs |
-| POST   | `/stop`               | Bearer | Stop container |
-| POST   | `/restart`            | Bearer | Restart container |
-| DELETE | `/remove`             | Bearer | Force-remove + delete row |
+---
 
-## 8. Running Tests
+## Running Tests
 
 ```bash
 cd backend
@@ -114,87 +124,72 @@ pip install -r requirements.txt
 pytest ../tests/ -v
 ```
 
-**Expected:** `25 passed`.
+Expected output: `25 passed`.
 
-Health and security tests use **SQLite** and mocks locally. On **GitHub Actions** (`CI=true`), auth and deploy jobs use the **service PostgreSQL** container with the same application code.
+Tests are split across four files:
 
-## 9. CI/CD Pipeline
+| File | What it covers | External deps |
+|---|---|---|
+| `test_health.py` | Public endpoints, health checks | SQLite + mocks |
+| `test_security.py` | Input validation, injection guards | SQLite + mocks |
+| `test_auth.py` | Register, login, token flow | PostgreSQL (CI) |
+| `test_deploy.py` | Full deploy lifecycle | PostgreSQL + mocked Docker CLI |
 
-The workflow **`.github/workflows/ci.yml`** runs four jobs in order:
+---
 
-1. **lint** — `flake8` on `backend/` and `bandit -ll` for basic security scanning.  
-2. **unit-and-mock-tests** — installs dependencies, runs `test_health.py` and `test_security.py` (no real Docker or Postgres required).  
-3. **auth-and-deploy-tests** — spins up **Postgres 16**, sets `DATABASE_URL`, runs `test_auth.py` and `test_deploy.py` with Docker **subprocess calls mocked** in `conftest.py`.  
-4. **build-verify** — validates `docker compose config` and builds the backend image to ensure the Dockerfile still works.
+## CI/CD Pipeline
 
-## 10. Project Structure
+Four sequential GitHub Actions jobs on every push:
+
+```
+lint → unit-and-mock-tests → auth-and-deploy-tests → build-verify
+```
+
+1. **lint** — `flake8` style check + `bandit -ll` security scan on `backend/`
+2. **unit-and-mock-tests** — health and security tests with SQLite, no external services needed
+3. **auth-and-deploy-tests** — spins up a Postgres 16 service container, runs auth and deploy tests with Docker CLI mocked via `conftest.py`
+4. **build-verify** — validates `docker compose config` and builds the backend image end-to-end
+
+---
+
+## Project Structure
 
 ```
 mca-local-paas/
-├── backend/
-│   ├── main.py
-│   ├── database.py
-│   ├── models.py
-│   ├── schemas.py
-│   ├── auth.py
-│   ├── docker_service.py
-│   ├── utils.py
-│   ├── requirements.txt
-│   └── Dockerfile
-├── frontend/
-│   ├── index.html
-│   ├── dashboard.html
-│   ├── css/style.css
-│   └── js/app.js
-├── tests/
-│   ├── conftest.py
-│   ├── test_health.py
-│   ├── test_auth.py
-│   ├── test_deploy.py
-│   └── test_security.py
-├── nginx/
-│   └── nginx.conf
-├── prometheus/
-│   └── prometheus.yml
-├── grafana/provisioning/
-│   ├── datasources/prometheus.yml
-│   └── dashboards/
-│       ├── dashboard.yml
-│       └── json/paas_dashboard.json
-├── .github/workflows/ci.yml
+├── backend/             # FastAPI app (main.py, auth, models, docker_service…)
+├── frontend/            # Static HTML/CSS/JS dashboard
+├── tests/               # pytest suite (25 tests)
+├── nginx/               # Reverse proxy config
+├── prometheus/          # Scrape config
+├── grafana/             # Provisioned datasource + dashboard JSON
+├── .github/workflows/   # CI pipeline
 ├── docker-compose.yml
 ├── .env.example
-├── .gitignore
 └── README.md
 ```
 
-## 11. Examiner FAQ
+---
 
-**Q: How is this different from Docker Desktop?**  
-Docker Desktop is a general container runtime UI. This project is a **narrow PaaS workflow**: authenticated API, **port allocation policy**, **persistent deployment records**, metrics, and CI tests that prove behavior.
+## Security Notes
 
-**Q: How is the system secured?**  
-**JWT** protects mutating and listing routes. Passwords are **bcrypt-hashed**. Image names are **validated** to reduce injection via the Docker CLI. The stack is intended for **local lab use**; production would add TLS, stronger secrets rotation, and RBAC.
+- All mutating and listing routes require a **Bearer JWT**
+- Passwords are **bcrypt-hashed** before storage
+- Image names are **validated** before being passed to the Docker CLI
+- Default credentials are for **local/lab use only** — rotate `JWT_SECRET_KEY` and Grafana secrets before any networked deployment
 
-**Q: What happens if a container crashes?**  
-The next **GET `/containers`** call runs `docker inspect` and **syncs** the `status` field in PostgreSQL toward the real engine state (for example `running` vs `exited`).
+---
 
-**Q: Show me the tests**  
-There are **25 tests** in four files: health/public endpoints, authentication, deployment lifecycle with a **mocked Docker CLI**, and **security validation** on deploy input. Run `pytest ../tests/ -v` from `backend/`.
+## Troubleshooting
 
-**Q: Why this monitoring stack?**  
-**Prometheus** scrapes the FastAPI `/metrics` endpoint (request counts, latency histogram, gauges for CPU/memory/disk and running deployments). **Grafana** ships a pre-provisioned **“Local PaaS Dashboard”** so you can demonstrate observability during the viva.
+| Symptom | Fix |
+|---|---|
+| Port 80 already in use | Change the Nginx host port in `docker-compose.yml` to e.g. `"8080:80"` |
+| `permission denied` on Docker socket | Add your user to the `docker` group (Linux), or ensure Docker Desktop is running (Windows/macOS) |
+| Backend can't connect to Postgres | Wait for the Postgres healthcheck to pass; verify `DATABASE_URL` matches your Compose credentials |
+| Tests fail with DB errors | Run from `backend/`; local runs use SQLite by default, CI uses Postgres when `CI=true` |
 
-## 12. Troubleshooting
-
-| Symptom | What to try |
-|--------|-------------|
-| **Port 80 in use** | Stop IIS/other web servers, or change the host mapping in `docker-compose.yml` for the `nginx` service (e.g. `"8080:80"`). |
-| **Docker socket permission denied** | On Linux, add your user to the `docker` group or run Compose with appropriate permissions. On Windows, ensure Docker Desktop is running and WSL2 backend is healthy. |
-| **Backend cannot connect to Postgres** | Wait for the `postgres` healthcheck; check `DATABASE_URL` matches `docker-compose.yml` credentials. |
-| **`docker` command not found in backend container** | The compose file bind-mounts `/usr/bin/docker` from the host — this targets **Linux** hosts. On Windows, prefer Docker Desktop’s Linux engine or adjust mounts/paths for your setup. |
-| **Tests failing with DB errors** | Run from `backend/` with `pip install -r requirements.txt`. For local runs, tests default to **SQLite**; CI uses Postgres when `CI=true` and `DATABASE_URL` is PostgreSQL. |
+---
 
 ## License
 
-MIT — suitable for academic submission; adjust if your institution requires a different license.
+[MIT](./LICENSE) — free for academic submission and personal use.
